@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0b0f1e">
+<!-- Запрет кеширования: иначе браузер показывает старую версию игры,
+     и правки выглядят как «кнопки не работают». -->
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Печать Мага — Sigil Mage</title>
+<link rel="stylesheet" href="src/style.css?v=21">
+</head>
+<body>
+
+<canvas id="game"></canvas>
+
+<!-- ============ ГЛАВНОЕ МЕНЮ ============ -->
+<div class="overlay active" id="menu">
+  <div class="panel menu-panel">
+    <h1>印 <span class="accent">ПЕЧАТЬ МАГА</span> 印</h1>
+    <p class="subtitle">Рисуй символы в воздухе. Читай противника. Выживай.</p>
+    <p class="level-count" id="level-count"></p>
+
+    <!-- Выбора сложности больше нет: путь один, а темп врага растёт
+         сам по мере уровней — от самого медленного рисунка на первом
+         уровне до обычного на последнем. -->
+    <p class="diff-label">Сложность растёт сама</p>
+    <p class="level-count" style="margin: -6px 0 14px">
+      На первом уровне враг выводит знак втрое дольше, к середине — вдвое,
+      на последнем — обычным темпом. Урон и мана у всех одинаковые:
+      растёт только скорость рисования.
+    </p>
+
+    <div class="menu-buttons">
+      <button id="btn-resume" class="btn primary" hidden>Продолжить</button>
+      <button id="btn-start" class="btn primary">Начать путь</button>
+      <button id="btn-help" class="btn ghost">Как играть (H)</button>
+    </div>
+
+    <!-- ============ МУЗЫКА ============ -->
+    <div class="music-box">
+      <div class="music-row">
+        <label for="music-volume">Музыка</label>
+        <input type="range" id="music-volume" min="0" max="100" value="55">
+        <span id="music-volume-val">55%</span>
+      </div>
+      <div class="music-row">
+        <label for="music-track">Мелодия</label>
+        <select id="music-track"></select>
+      </div>
+      <div class="music-row">
+        <label for="voice-volume">Голоса стражей</label>
+        <input type="range" id="voice-volume" min="0" max="100" value="60">
+        <span id="voice-volume-val">60%</span>
+      </div>
+      <p class="music-hint">На стражах музыка меняется на его собственную тему.
+        Каждый страж вслух предупреждает о мощном заклинании —
+        таком, что нужно отразить или сбить. Ползунок выше управляет его голосом.</p>
+    </div>
+
+    <!-- ============ РЕЖИМЫ ИСПЫТАНИЙ ============ -->
+    <div class="challenge-box">
+      <p class="challenge-title">Испытания</p>
+      <p class="level-count" style="margin: -4px 0 10px">
+        Обычный путь лечит вас между боями. Испытания — нет.
+      </p>
+      <div class="challenge-list">
+        <button id="btn-challenge-1" class="btn challenge">
+          <b>Стойкость</b>
+          <span>Без лечения между уровнями</span>
+        </button>
+        <button id="btn-challenge-2" class="btn challenge">
+          <b>Ярость</b>
+          <span>Без лечения, враг в темпе последнего стража</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="menu-lore">
+      <p>Ты — последний из ордена Печати. Семь Стражей преграждают путь к Небесному Трону,
+      и за каждым из них — десяток тех, кто не желает тебя пропускать.</p>
+      <p>Твоя сила — не в мече, а в умении начертать знак быстрее, чем противник
+      начертит свой.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ПОБЕДА ============ -->
+<div class="overlay" id="victory">
+  <div class="panel">
+    <h2 id="victory-title" class="win">Победа!</h2>
+    <p id="victory-text"></p>
+    <div class="menu-buttons">
+      <button id="btn-continue" class="btn primary">Дальше: <span id="victory-next"></span></button>
+      <button id="btn-menu" class="btn ghost">В меню</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ПОРАЖЕНИЕ ============ -->
+<div class="overlay" id="defeat">
+  <div class="panel">
+    <h2 class="lose">Поражение</h2>
+    <p id="defeat-text"></p>
+    <div class="menu-buttons">
+      <button id="btn-retry" class="btn primary">Повторить бой</button>
+      <button id="btn-menu2" class="btn ghost">В меню</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ПОМОЩЬ ============ -->
+<div class="overlay" id="help">
+  <div class="panel help-panel">
+    <h2>Как играть</h2>
+
+    <div class="help-grid">
+      <div class="help-col">
+        <h3>Управление</h3>
+        <p><b>Зажмите мышь</b> и ведите линию — так рисуется символ.</p>
+        <p><b>Отпустите</b> — символ распознаётся и начинается каст.</p>
+        <p><b>На телефоне:</b> то же самое пальцем.</p>
+        <p><b>Space</b> — быстро поднять/опустить щит.</p>
+        <p><b>H</b> — эта справка.</p>
+      </div>
+
+      <div class="help-col">
+        <h3>Главное правило боя</h3>
+        <p><b>Щит</b> блокирует весь урон, но постоянно ест ману,
+        и <b>пока он поднят — колдовать нельзя</b>.</p>
+        <p>Если держать щит слишком долго, мана кончится, щит упадёт сам,
+        и вы останетесь без защиты именно тогда, когда враг кастует тяжёлое заклинание.</p>
+        <p>Если кастовать бездумно — вас собьют на полуслове.</p>
+      </div>
+
+      <div class="help-col">
+        <h3>Как читать противника</h3>
+        <p>Враг рисует свой символ <b>прямо в воздухе</b>. Вы видите и форму, и ранг.</p>
+        <p><b>Видите длинный символ (Ранг III+)?</b> — успейте сбить его дешёвой
+        <b>Искрой</b> (Ранг I). Она быстрее любого тяжёлого каста.</p>
+        <p><b>Видите короткий символ?</b> — сбить не успеете, ставьте щит.</p>
+        <p><b>Враг ушёл в щит?</b> — не тратьте ману, копите её и готовьте пробой.</p>
+      </div>
+
+      <div class="help-col">
+        <h3>Ранги символов</h3>
+        <p><span class="t1">Ранг I</span> — 2 штриха, дёшево и мгновенно. Для сбивания.</p>
+        <p><span class="t2">Ранг II</span> — 3 штриха. Основная работа.</p>
+        <p><span class="t3">Ранг III</span> — 4 штриха. Пробивают щит частично.</p>
+        <p><span class="t4">Ранг IV</span> — 5 штрихов. Требуют окна безопасности.</p>
+        <p><span class="t5">Ранг V</span> — 6 штрихов. Огромный риск и урон.</p>
+        <p class="note">Чем выше ранг, тем сложнее начертать и тем дольше каст —
+        вас легче прервать.</p>
+      </div>
+    </div>
+
+    <h3>Примеры символов</h3>
+    <div class="sigil-table" id="sigil-table"></div>
+
+    <button id="btn-help-close" class="btn primary">Понятно</button>
+  </div>
+</div>
+
+<script type="module" src="src/main.js?v=21"></script>
+</body>
+</html>

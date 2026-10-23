@@ -1,0 +1,728 @@
+/* ============================================================
+   ПЕЧАТЬ МАГА — стили
+   Тёмная восточная палитра: нефрит, золото, ночной синий.
+   ============================================================ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0b0f1e;
+  --panel: rgba(14, 18, 34, 0.94);
+  --border: rgba(140, 180, 255, 0.22);
+  --gold: #ffd166;
+  --jade: #4fe8bb;
+  --blue: #8fd3ff;
+  --red: #ff4d6d;
+  --text: #e8e8f0;
+  --muted: rgba(180, 185, 210, 0.72);
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', 'Noto Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#game {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+/* ---------------- Оверлеи ---------------- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: radial-gradient(circle at 50% 40%, rgba(20, 26, 50, 0.82), rgba(5, 6, 12, 0.96));
+  backdrop-filter: blur(6px);
+  z-index: 10;
+  overflow-y: auto;
+}
+
+.overlay.active { display: flex; }
+
+/* Панель на полный вьюпорт, без внутренней прокрутки.
+ *
+ * Раньше стоял max-height: 92vh + overflow-y: auto — на узких и низких
+ * экранах кнопки вылезали за пределы видимой области, и игрок видел
+ * только заголовок поражения, но не «В меню». Теперь все кнопки
+ * гарантированно попадают в экран, а на переполнении срабатывает
+ * внешний скролл .overlay. */
+.panel {
+  width: min(760px, 100%);
+  max-height: calc(100vh - 40px);
+  padding: clamp(20px, 4vh, 38px) clamp(18px, 4vw, 42px);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 0 60px rgba(80, 130, 255, 0.14), inset 0 0 60px rgba(60, 90, 180, 0.06);
+  text-align: center;
+  animation: rise 0.35s ease-out;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.menu-panel { width: min(680px, 100%); }
+
+h1 {
+  font-size: clamp(24px, 4.6vw, 40px);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+  text-shadow: 0 0 26px rgba(140, 200, 255, 0.42);
+}
+
+.accent {
+  background: linear-gradient(180deg, #fff3c4, var(--gold), #ff9d5c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+h2 {
+  font-size: clamp(20px, 3.6vw, 30px);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  margin-bottom: 14px;
+}
+
+h2.win  { color: var(--gold); text-shadow: 0 0 24px rgba(255, 209, 102, 0.4); }
+h2.lose { color: var(--red);  text-shadow: 0 0 24px rgba(255, 77, 109, 0.35); }
+
+h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--jade);
+  margin: 16px 0 8px;
+  letter-spacing: 0.03em;
+}
+
+.subtitle {
+  color: var(--muted);
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+
+.level-count {
+  color: rgba(140, 200, 255, 0.6);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  margin-bottom: 26px;
+}
+
+p { line-height: 1.62; color: var(--muted); font-size: 14.5px; margin-bottom: 9px; }
+p b { color: var(--text); }
+
+/* ---------------- Уровни сложности ---------------- */
+
+.difficulty {
+  margin-bottom: 24px;
+}
+
+.diff-label {
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(140, 200, 255, 0.55);
+  margin-bottom: 12px;
+}
+
+.diff-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.diff-card {
+  flex: 1 1 150px;
+  max-width: 190px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 13px 14px;
+  text-align: left;
+  background: rgba(20, 32, 58, 0.55);
+  border: 1px solid rgba(120, 170, 255, 0.18);
+  border-radius: 12px;
+  color: var(--muted);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s, transform 0.18s;
+}
+
+.diff-card:hover {
+  border-color: rgba(120, 170, 255, 0.42);
+  transform: translateY(-2px);
+}
+
+.diff-card.selected {
+  border-color: rgba(150, 210, 255, 0.85);
+  background: rgba(40, 78, 140, 0.5);
+  box-shadow: 0 0 0 1px rgba(150, 210, 255, 0.28), 0 6px 22px rgba(60, 130, 255, 0.16);
+}
+
+.diff-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.diff-card.selected .diff-name { color: #cfe6ff; }
+
+.diff-sub {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: rgba(150, 210, 255, 0.75);
+}
+
+.diff-desc {
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(170, 190, 220, 0.65);
+}
+
+/* Плашка с ослаблением врагов: это цифра, а не художественный текст,
+   поэтому она отделена от описания и читается как условие режима. */
+.diff-bonus {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(120, 170, 255, 0.16);
+  font-size: 11px;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: rgba(140, 215, 170, 0.9);
+}
+
+.diff-card[data-difficulty="full"] .diff-bonus {
+  color: rgba(190, 170, 220, 0.7);
+}
+
+/* ---------------- Музыка ---------------- */
+
+.music-box {
+  margin: 18px auto 0;
+  max-width: 440px;
+  padding: 14px 18px;
+  background: rgba(16, 22, 40, 0.55);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.music-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.music-row:last-of-type { margin-bottom: 0; }
+
+.music-row label {
+  flex: 0 0 76px;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: rgba(190, 210, 245, 0.85);
+}
+
+/* Ползунок в стиле игры: тёмная дорожка, светлый бегунок. */
+.music-row input[type="range"] {
+  flex: 1 1 auto;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(70, 95, 150, 0.55);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.music-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #8ecfff;
+  box-shadow: 0 0 10px rgba(140, 200, 255, 0.7);
+  cursor: pointer;
+}
+
+.music-row input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: none;
+  border-radius: 50%;
+  background: #8ecfff;
+  box-shadow: 0 0 10px rgba(140, 200, 255, 0.7);
+  cursor: pointer;
+}
+
+.music-row #music-volume-val {
+  flex: 0 0 42px;
+  font-size: 12px;
+  text-align: right;
+  color: rgba(160, 200, 255, 0.8);
+  font-variant-numeric: tabular-nums;
+}
+
+.music-row select {
+  flex: 1 1 auto;
+  padding: 6px 10px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: rgba(30, 40, 70, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.music-hint {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(150, 170, 210, 0.65);
+  text-align: center;
+}
+
+/* ---------------- Испытания ---------------- */
+
+.challenge-box {
+  margin: 22px auto 0;
+  max-width: 560px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(70, 90, 140, 0.35);
+}
+
+.challenge-title {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 180, 120, 0.9);
+  text-align: center;
+}
+
+.challenge-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.btn.challenge {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  text-align: left;
+  background: rgba(52, 30, 24, 0.6);
+  border-color: rgba(200, 110, 60, 0.4);
+}
+
+.btn.challenge:hover {
+  background: rgba(78, 42, 30, 0.85);
+  border-color: rgba(255, 150, 90, 0.6);
+  box-shadow: 0 0 18px rgba(255, 120, 60, 0.2);
+}
+
+.btn.challenge b {
+  font-size: 14px;
+  color: rgba(255, 200, 150, 0.95);
+}
+
+.btn.challenge span {
+  font-size: 11.5px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: rgba(200, 185, 175, 0.72);
+}
+
+@media (max-width: 640px) {
+  .challenge-list { grid-template-columns: 1fr; }
+  .music-box { padding: 12px 14px; }
+}
+
+/* ---------------- Кнопки ---------------- */
+
+.menu-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 26px;
+}
+
+.btn {
+  padding: 13px 28px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  letter-spacing: 0.03em;
+  color: var(--text);
+  background: rgba(40, 50, 84, 0.7);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.btn:hover {
+  background: rgba(60, 80, 130, 0.85);
+  border-color: rgba(160, 200, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.btn:active { transform: translateY(0); }
+
+.btn.primary {
+  background: linear-gradient(180deg, rgba(90, 130, 220, 0.9), rgba(50, 75, 150, 0.9));
+  border-color: rgba(160, 200, 255, 0.55);
+  box-shadow: 0 0 22px rgba(90, 140, 255, 0.28);
+}
+
+.btn.primary:hover {
+  background: linear-gradient(180deg, rgba(110, 155, 245, 0.95), rgba(65, 95, 180, 0.95));
+  box-shadow: 0 0 30px rgba(110, 160, 255, 0.42);
+}
+
+.btn.ghost {
+  background: transparent;
+  color: var(--muted);
+}
+
+/* ---------------- Меню: лор ---------------- */
+
+.menu-lore {
+  margin-top: 30px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(140, 180, 255, 0.14);
+  text-align: left;
+}
+
+.menu-lore p { font-size: 13.5px; font-style: italic; }
+
+/* ---------------- Помощь ---------------- */
+
+.help-panel { width: min(980px, 100%); text-align: left; }
+.help-panel h2, .help-panel > .btn { text-align: center; display: block; margin: 0 auto; }
+.help-panel h2 { text-align: center; }
+
+.help-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 10px 26px;
+  margin-bottom: 20px;
+}
+
+.help-col h3:first-child { margin-top: 0; }
+
+.note {
+  color: rgba(255, 209, 102, 0.75);
+  font-size: 13px;
+  font-style: italic;
+}
+
+.t1 { color: #8fd3ff; font-weight: 700; }
+.t2 { color: #9dff9d; font-weight: 700; }
+.t3 { color: #ffe066; font-weight: 700; }
+.t4 { color: #ff9d5c; font-weight: 700; }
+.t5 { color: #ff6b9d; font-weight: 700; }
+
+/* ---------------- Таблица символов ---------------- */
+
+.sigil-table {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+  gap: 9px;
+  margin: 12px 0 24px;
+}
+
+.sigil-card {
+  padding: 11px 13px;
+  background: rgba(30, 38, 62, 0.6);
+  border: 1px solid rgba(140, 180, 255, 0.16);
+  border-left-width: 3px;
+  border-radius: 4px;
+}
+
+.sigil-card .sc-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.sigil-card .sc-hanzi {
+  font-size: 21px;
+  line-height: 1;
+  font-family: 'Noto Serif SC', serif;
+}
+
+.sigil-card .sc-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.sigil-card .sc-tier {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+.sigil-card .sc-arrows {
+  font-size: 17px;
+  letter-spacing: 0.14em;
+  color: rgba(220, 235, 255, 0.9);
+  margin-bottom: 5px;
+}
+
+.sigil-card .sc-desc {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* Миниатюра формы снаряда: силуэт, по которому заклинание
+   опознаётся в бою. Рядом с названием, чтобы связь была очевидной. */
+.sigil-card .sc-shape {
+  display: block;
+  width: 56px;
+  height: 56px;
+  margin: 6px auto 2px;
+  image-rendering: auto;
+}
+
+.sigil-card .sc-cost {
+  font-size: 11px;
+  color: rgba(140, 200, 255, 0.7);
+  margin-top: 5px;
+}
+
+/* ---------------- Мобильные ---------------- */
+
+/* ============================================================
+   ПОД ТЕЛЕФОНЫ
+   ============================================================
+
+   Что здесь решается и почему:
+
+   1. ВЫСОТА ЭКРАНА. 100vh на телефоне — это высота БЕЗ адресной
+      строки браузера. Когда строка прячется, 100vh оказывается больше
+      видимой области: низ канваса и кнопки уезжают под экран. 100dvh
+      (dynamic viewport height) считается по реальной видимой области
+      и обновляется, когда строка прячется. Старые браузеры его не
+      понимают — для них оставлен 100vh как запасной вариант.
+
+   2. БЕЗОПАСНЫЕ ЗОНЫ. У телефонов с «монобровью» и скруглёнными
+      углами часть экрана занята. env(safe-area-inset-*) — это отступы,
+      которые браузер сообщает сам; без них заголовок меню заезжает
+      под вырез, а кнопка «Дальше» — под полосу жестов.
+
+   3. РАЗМЕР КНОПОК. Палец — не курсор: попасть в кнопку высотой 34 px
+      трудно. Все кнопки на тач-экране получают минимум 46 px по
+      высоте, а ползунок музыки — увеличенную зону захвата.
+
+   4. ПРОКРУТКА ПАНЕЛЕЙ. Меню и справка длиннее экрана телефона, а
+      страница целиком заблокирована (overflow: hidden у body). Значит
+      прокручиваться должна САМА панель, иначе до нижних кнопок не
+      добраться. Прокрутка включается только внутри .panel — она не
+      конфликтует с рисованием знаков на канвасе.
+
+   5. КРУПНЫЙ ТЕКСТ. Системный шрифт на телефоне мельче, поэтому
+      подписи чуть увеличиваются, а не уменьшаются.
+   ============================================================ */
+
+/* Запасная высота для браузеров без dvh. */
+html, body { height: 100%; }
+
+@supports (height: 100dvh) {
+  html, body { height: 100dvh; }
+  #game { height: 100dvh; }
+}
+
+/* ============================================================
+   ТАЧ-ЭКРАНЫ И НЕБОЛЬШИЕ ОКНА
+   Условие «грубый указатель ИЛИ узкий экран» ловит и телефон, и
+   планшет, и окно браузера, сжатое до ширины телефона.
+   ============================================================ */
+
+@media (max-width: 640px), (pointer: coarse) {
+  /* --- Канвас: занимает всю видимую область --- */
+  #game {
+    width: 100%;
+    height: 100vh;
+    /* Убирает «резинку» при прокрутке жестом на iOS. */
+    overscroll-behavior: none;
+  }
+
+  @supports (height: 100dvh) {
+    #game { height: 100dvh; }
+  }
+
+  /* --- Оверлеи: отступы под вырез и полосу жестов --- */
+  .overlay {
+    padding:
+      calc(10px + env(safe-area-inset-top))
+      calc(10px + env(safe-area-inset-right))
+      calc(10px + env(safe-area-inset-bottom))
+      calc(10px + env(safe-area-inset-left));
+    /* Внешний слой НЕ прокручивается (панель ниже растянута на всю
+       высоту). Но и overflow: hidden тут ставить нельзя: он отрезал бы
+       панель, и внутренняя прокрутка осталась бы без видимой области. */
+    overflow: hidden;
+    align-items: stretch;
+  }
+
+  /* --- ЛИСТАЮЩАЯСЯ ПАНЕЛЬ --- */
+  .panel {
+    width: 100%;
+    max-height: 100%;
+    /* Прокрутка внутри панели: иначе нижние кнопки недостижимы. */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Плавная прокрутка не мешает нажатиям. */
+    overscroll-behavior: contain;
+    padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  /* --- Заголовок меню: не больше двух строк --- */
+  .menu-panel h1 {
+    font-size: 22px;
+    line-height: 1.25;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  /* --- Кнопки под палец --- */
+  .btn {
+    /* Минимум 46 px по высоте — палец должен попадать без прицела. */
+    min-height: 46px;
+    padding: 12px 18px;
+    font-size: 15px;
+    width: 100%;
+    /* На тач-экране «залипание» hover только мешает. */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn:hover {
+    transform: none;
+    background: rgba(40, 50, 84, 0.7);
+    border-color: var(--border);
+  }
+
+  .btn.primary:hover {
+    background: linear-gradient(180deg, rgba(90, 130, 220, 0.9), rgba(50, 75, 150, 0.9));
+    box-shadow: 0 0 22px rgba(90, 140, 255, 0.28);
+  }
+
+  /* Кнопки в столбик: на узком экране ряд из двух нечитаем. */
+  .menu-buttons {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  /* --- Музыка: ползунок удобнее для пальца --- */
+  .music-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .music-row label {
+    flex: 0 0 auto;
+    font-size: 13px;
+  }
+
+  .music-row input[type="range"] {
+    /* Высокая зона захвата: по тонкой полоске пальцем не попасть. */
+    flex: 1 1 100%;
+    height: 32px;
+    order: 3;
+  }
+
+  .music-row select {
+    flex: 1 1 auto;
+    min-height: 44px;
+    font-size: 15px;
+  }
+
+  /* --- Справка: одна колонка --- */
+  .help-grid { grid-template-columns: 1fr; }
+  .sigil-table { grid-template-columns: 1fr; }
+
+  .help-col h3 { font-size: 15px; }
+  .help-col p { font-size: 14px; line-height: 1.55; }
+
+  /* Нижняя кнопка «Понятно» не должна прилипать к краю. */
+  #btn-help-close { margin-top: 16px; }
+}
+
+/* ============================================================
+   СОВСЕМ НИЗКИЕ ЭКРАНЫ (телефон боком)
+   Высота меньше 480 px: вертикальное места мало, поэтому сжимаем
+   отступы и прячем второстепенное, чтобы кнопки остались в кадре.
+   ============================================================ */
+
+@media (max-height: 480px) {
+  .overlay {
+    padding: calc(6px + env(safe-area-inset-top)) 12px calc(6px + env(safe-area-inset-bottom));
+  }
+
+  .panel {
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .menu-panel h1 { font-size: 18px; }
+  .subtitle { display: none; }
+  .menu-lore { display: none; }
+
+  .btn {
+    min-height: 40px;
+    padding: 9px 16px;
+    font-size: 14px;
+  }
+
+  .menu-buttons {
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+
+  .music-box, .challenge-box { margin-top: 12px; }
+}
+
+/* ============================================================
+   УМЕНЬШЕНИЕ АНИМАЦИЙ
+   Если в системе включено «уменьшить движение», убираем въезд
+   панелей. На телефоне это ещё и экономит батарею.
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .panel { animation: none; }
+  .btn { transition: none; }
+}
